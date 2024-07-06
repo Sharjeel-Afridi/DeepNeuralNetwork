@@ -79,10 +79,10 @@ def forward_propagation(X, parameters, activation = 'relu'):
 
     return forward_cache['A' + str(L)], forward_cache
 
-aL, forw_cache = forward_propagation(X_train, params, 'relu')
+# aL, forw_cache = forward_propagation(X_train, params, 'relu')
 
-for l in range(len(params)//2 + 1):
-    print("Shape of A" + str(l) + " :", forw_cache['A' + str(l)].shape)
+# for l in range(len(params)//2 + 1):
+#     print("Shape of A" + str(l) + " :", forw_cache['A' + str(l)].shape)
 
 
 def compute_cost(AL, Y):
@@ -118,9 +118,42 @@ def backward_propagation(AL, Y, parameters, forward_cache, activation):
         grads['db' + str(l)] = (1/m) * np.sum(grads["dZ" + str(l)], axis = 1, keepdims = True)
     
     return grads
-grads = backward_propagation(forw_cache["A" + str(3)], Y_train, params, forw_cache, 'relu')
+# grads = backward_propagation(forw_cache["A" + str(3)], Y_train, params, forw_cache, 'relu')
 
-for l in reversed(range(1, len(grads)//3 + 1)):
-    print("Shape of dZ" + str(l) + " :", grads['dZ' + str(l)].shape)
-    print("Shape of dW" + str(l) + " :", grads['dW' + str(l)].shape)
-    print("Shape of dB" + str(l) + " :", grads['db' + str(l)].shape, "\n")
+# for l in reversed(range(1, len(grads)//3 + 1)):
+#     print("Shape of dZ" + str(l) + " :", grads['dZ' + str(l)].shape)
+#     print("Shape of dW" + str(l) + " :", grads['dW' + str(l)].shape)
+#     print("Shape of dB" + str(l) + " :", grads['db' + str(l)].shape, "\n")
+
+def update_parameters(parameters, grads, learning_rate):
+
+    L = len(parameters)//2
+
+    for l in range(1, L):
+        parameters["W" + str(l)] = parameters["W"+str(l)] - learning_rate*grads["dW"+ str(l)]
+        parameters["b" + str(l)] = parameters["b"+str(l)] - learning_rate*grads["db"+ str(l)]
+    return parameters
+
+
+def model(X, Y, layer_dims, learning_rate, activation = 'relu', num_iterations = 100):
+
+    parameters = initialize_parameters(layer_dims)
+
+    for i in range(1, num_iterations):
+        AL, forward_cache = forward_propagation(X, parameters, activation)
+        
+        cost = compute_cost(AL, Y)
+
+        grads = backward_propagation(AL, Y, parameters, forward_cache, activation)
+
+        parameters = update_parameters(parameters, grads, learning_rate)
+
+        if i % (num_iterations/10) == 0:
+            print("cost is", cost)
+    return parameters
+
+layers_dims = [X_train.shape[0], 20, 7, 5, Y_train.shape[0]] #  4-layer model
+lr = 0.0075
+iters = 2500
+
+parameters = model(X_train, Y_train, layers_dims, learning_rate = lr, activation = 'relu', num_iterations = iters)
