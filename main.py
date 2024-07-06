@@ -83,3 +83,44 @@ aL, forw_cache = forward_propagation(X_train, params, 'relu')
 
 for l in range(len(params)//2 + 1):
     print("Shape of A" + str(l) + " :", forw_cache['A' + str(l)].shape)
+
+
+def compute_cost(AL, Y):
+
+    m = Y.shape[1]
+
+    if Y.shape[0] == 1:
+        cost = -(1/m) * np.sum(Y*np.log(AL) + (1-Y)*np.log(1-AL))
+    else:
+        cost = -(1/m) * np.sum(Y.np.log(AL))
+    
+    cost = np.squeeze(cost)
+
+    return cost
+
+def backward_propagation(AL, Y, parameters, forward_cache, activation):
+
+    grads = {}
+    L = len(parameters)//2
+    m = Y.shape[1]
+
+    grads['dZ' + str(L)] = AL - Y
+    grads['dW' + str(L)] = (1/m) * np.dot(grads["dZ" + str(L)], forward_cache['A' + str(L-1)].T)
+    grads['db' + str(L)] = (1/m) * np.sum(grads["dZ" + str(L)], axis = 1, keepdims = True)
+
+    for l in reversed(range(1,L)):
+        if activation == 'tanh':
+            grads["dZ" + str(l)] = np.dot(parameters['W' + str(l+1)].T,grads["dZ" + str(l+1)])*derivative_tanh(forward_cache['A' + str(l)])
+        else:
+            grads["dZ" + str(l)] = np.dot(parameters['W' + str(l+1)].T,grads["dZ" + str(l+1)])*derivative_relu(forward_cache['A' + str(l)])
+
+        grads['dW' + str(l)] = (1/m) * np.dot(grads["dZ" + str(l)], forward_cache['A' + str(l-1)].T)
+        grads['db' + str(l)] = (1/m) * np.sum(grads["dZ" + str(l)], axis = 1, keepdims = True)
+    
+    return grads
+grads = backward_propagation(forw_cache["A" + str(3)], Y_train, params, forw_cache, 'relu')
+
+for l in reversed(range(1, len(grads)//3 + 1)):
+    print("Shape of dZ" + str(l) + " :", grads['dZ' + str(l)].shape)
+    print("Shape of dW" + str(l) + " :", grads['dW' + str(l)].shape)
+    print("Shape of dB" + str(l) + " :", grads['db' + str(l)].shape, "\n")
